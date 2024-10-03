@@ -1,7 +1,8 @@
 #pragma once
-
+#include <iterator>
 template<typename T>
 struct arrayIterator{
+    using iterator_category = std::contiguous_iterator_tag;
     using value_type = T;
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
