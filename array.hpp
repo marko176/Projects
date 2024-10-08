@@ -113,11 +113,11 @@ struct array{
     }
 
     [[nodiscard]] constexpr reverse_iterator rbegin(){
-        return reverse_iterator(data());
+        return reverse_iterator(end());
     }
 
     [[nodiscard]] constexpr const_reverse_iterator crbegin() const{
-        return const_reverse_iterator(data());
+        return const_reverse_iterator(cend());
     }
 
     [[nodiscard]] constexpr const_reverse_iterator rbegin() const{
@@ -125,17 +125,16 @@ struct array{
     }
 
     [[nodiscard]] constexpr reverse_iterator rend(){
-        return reverse_iterator(data() + size());
+        return reverse_iterator(begin());
     }
 
     [[nodiscard]] constexpr const_reverse_iterator crend() const{
-        return const_reverse_iterator(data() + size());
+        return const_reverse_iterator(cbegin());
     }
 
     [[nodiscard]] constexpr const_reverse_iterator rend() const{
         return crend();
     }
-
 
     T m_elements[N];
 };

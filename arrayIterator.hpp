@@ -3,6 +3,7 @@
 template<typename T>
 struct arrayIterator{
     using iterator_category = std::contiguous_iterator_tag;
+    friend class arrayIterator<const T>;
     using value_type = T;
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
@@ -11,7 +12,15 @@ struct arrayIterator{
     using reference = T&;
     using const_reference = const T&;
     
-    arrayIterator(pointer data) : m_data{data} {}
+    explicit arrayIterator(pointer data) : m_data{data} {}
+
+    arrayIterator(const arrayIterator& other) : m_data(other.m_data){
+
+    }
+
+    constexpr operator arrayIterator<const T>() const {
+        return arrayIterator<const T>(m_data);
+    }
 
     [[nodiscard]] constexpr reference operator*(){
         return *m_data;
@@ -52,12 +61,40 @@ struct arrayIterator{
         return *this;
     }
 
+    constexpr arrayIterator operator+(size_type val){
+        return arrayIterator(m_data + val);
+    }
+
+    constexpr arrayIterator operator-(size_type val){
+        return arrayIterator(m_data - val);
+    }
+
+    constexpr size_type operator-(arrayIterator other){
+        return m_data - other.m_data; 
+    }
+
     [[nodiscard]] constexpr bool operator==(const arrayIterator& other) const noexcept{
         return m_data == other.m_data;
     }
 
     [[nodiscard]] constexpr bool operator!=(const arrayIterator& other) const noexcept{
         return !(*this==other);
+    }
+
+    [[nodiscard]] constexpr bool operator<(const arrayIterator& other) const noexcept{
+        return m_data<other.m_data;
+    }
+
+    [[nodiscard]] constexpr bool operator>(const arrayIterator& other) const noexcept{
+        return m_data>other.m_data;
+    }
+
+    [[nodiscard]] constexpr bool operator<=(const arrayIterator& other) const noexcept{
+        return m_data<=other.m_data;
+    }
+
+    [[nodiscard]] constexpr bool operator>=(const arrayIterator& other) const noexcept{
+        return m_data>=other.m_data;
     }
 
     pointer m_data;

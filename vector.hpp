@@ -1,7 +1,9 @@
 #pragma once
+#include "vectorIterator.hpp"
 #include <memory>
 #include <algorithm>
 #include <bit>
+#include <utility>
 template<typename T,class Alloc = std::allocator<T>>
 class vector{
     public:
@@ -13,11 +15,53 @@ class vector{
     using reference = T&;
     using const_reference = const T&;
     using allocator_type = Alloc;
+    using iterator = vectorIterator<T>;
+    using const_iterator = vectorIterator<const T>;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-    vector() : m_data(nullptr), m_size(0), m_capacity(0), m_alloc{} {}
+    vector() noexcept(noexcept(allocator_type{})) : m_data(nullptr), m_size(0), m_capacity(0), m_alloc{allocator_type{}} {}
 
-    vector(size_type size) : m_data(change_capacity(std::bit_ceil(size))) , m_size(size) , m_capacity(std::bit_ceil(size)) , m_alloc{} {}
-    
+    explicit vector(const allocator_type& alloc) noexcept : m_data(nullptr), m_size(0), m_capacity(0), m_alloc{alloc} {}
+
+    explicit vector(size_type size, const_reference val = value_type{}, const allocator_type& alloc = allocator_type{}) : m_data(change_capacity(std::bit_ceil(size))) , m_size(0) , m_capacity(std::bit_ceil(size)) , m_alloc{alloc} {
+        for(int i = 0;i<size;i++)
+            push_back(val);
+    }
+
+    vector(std::initializer_list<value_type> list, const allocator_type& alloc = allocator_type{}) : vector(alloc) {
+        for(const_reference val : list)push_back(val);
+    }
+
+    template <typename It>
+    vector(It first, It last, const allocator_type& alloc = allocator_type{}) : vector(alloc) {
+        if constexpr(std::is_same_v<std::contiguous_iterator_tag,typename std::iterator_traits<It>::iterator_category>){
+            reserve(last-first);
+        }
+        while(first!=last)
+            push_back(*first++);
+        
+    }
+
+    vector(const vector& other) : vector(other.cbegin(),other.cend(),other.get_allocator()){
+        //copy constructor
+    }
+
+    vector(vector&& other) : m_data(std::exchange(other.data(),nullptr)) , m_size(std::exchange(other.size(),0)) , m_capacity(std::exchange(other.capacity(),0)) , m_alloc(other.get_allocator()){
+        //move constructor
+    }
+
+    vector& operator=(vector other) noexcept{
+        //copy & swap
+        swap(other);
+        return *this;
+    }
+
+    vector& operator=(std::initializer_list<value_type> list){
+        assign(list);
+        return *this;
+    }
+
     ~vector() noexcept{
         delete_data(m_size);
         free_data(m_data);
@@ -26,36 +70,137 @@ class vector{
     void constexpr push_back(const_reference val){
         if(size()>=capacity())
             increase_capacity(capacity()*2);
-        
-        new(&m_data[m_size++]) value_type(val);
+        std::construct_at(&m_data[m_size++],val);
     }
 
     void constexpr push_back(value_type&& val){
         if(size()>=capacity())
             increase_capacity(capacity()*2);
-        
-        new(&m_data[m_size++]) value_type(std::move(val));
+        std::construct_at(&m_data[m_size++],std::move(val));
     }
 
     template <typename... Args>
     reference constexpr emplace_back(Args&&... args){
         if(size()>=capacity())
             increase_capacity(capacity()*2);
-        
-        return new(&m_data[m_size++]) value_type(std::forward<Args>(args)...);
+        return std::construct_at(&m_data[m_size++],std::forward<Args>(args)...);
     }
 
-    void constexpr clear() noexcept(noexcept(~value_type())){
+    constexpr void clear() noexcept(noexcept(~value_type())){
         delete_data(size());
         m_size = 0;
     }
 
-    void constexpr pop_back(){
-        m_data[--m_size].~value_type();
+    constexpr void pop_back(){
+        //std::allocator_traits<allocator_type>::template destroy<int>(m_alloc,&m_data[--m_size]);
+        // if we had template destroy it wouldnt work
+        std::allocator_traits<allocator_type>::destroy(m_alloc,&m_data[--m_size]);
+    }
+
+    constexpr void assign(size_type count, const_reference val){
+        clear();
+        reserve(count);
+        for(auto i{0};i<count;++i)push_back(val);
+    }
+
+    template <typename It>
+    constexpr void assign(It first, It last){
+        clear();
+        if constexpr(std::is_same_v<std::contiguous_iterator_tag,typename std::iterator_traits<It>::iterator_category>){
+            reserve(std::distance(first,last));
+        }
+        while(first!=last)push_back(*first++);
+    }
+
+    constexpr void assign(std::initializer_list<value_type> list){
+        clear();
+        for(const_reference val : list)push_back(val);
+    }
+
+    template <typename... Args>
+    constexpr iterator emplace(const_iterator pos, Args&&... args){
+        size_type index = pos-begin();
+        emplace_back(std::forward<Args>(args)...);
+        partition(index,1);
+        return begin() + index;
+    }
+
+    constexpr iterator insert(const_iterator pos, const_reference val){
+        return insert(pos,static_cast<size_type>(1),val);
+    }
+
+    constexpr iterator insert(const_iterator pos, value_type&& val){
+        size_type index = pos-begin();
+        push_back(std::move(val));
+        partition(index,1);
+        return begin() + index;
+    }
+
+    constexpr iterator insert(const_iterator pos, size_type count, const_reference val){
+        size_type index = pos-begin();
+        for(auto i{0};i<count;++i)push_back(val);
+        partition(index,count);
+        return begin() + index;
+    }
+
+    template <typename It>
+    constexpr iterator insert(const_iterator pos, It first, It last){
+        size_type index = pos-begin();
+        size_type count = 0;
+        while(first!=last){
+            push_back(*first++);
+            ++count;
+        }
+        partition(index,count);
+        return begin() + index;
+    }
+
+    constexpr iterator insert(const_iterator pos, std::initializer_list<T> list){
+        size_type index = pos-begin();
+        size_type count = 0;
+        for(const_reference n : list){
+            push_back(n);
+            ++count;
+        }
+        partition(index,count);
+        return begin() + index;
+    }
+
+    iterator constexpr erase(iterator pos) {
+        return erase(pos,std::next(pos));
+    }
+
+    iterator constexpr erase(iterator first, iterator last) {
+        if(first == last)return first;
+        iterator tmp = first;
+        while(last != end()){
+            if constexpr(std::is_trivially_copyable_v<value_type>){
+                std::memmove(&(*first),&(*last),(end()-last) * sizeof(value_type));
+                first+=end()-last;
+                break;
+            }else if constexpr(std::is_nothrow_constructible_v<value_type>){
+                *first++ = std::move(*last++);
+            }else{
+                *first++ = *last++;
+            }
+        }
+        
+        while(first != end())
+            pop_back();
+        return tmp;
     }
 
     void reserve(size_type size){
         increase_capacity(std::bit_ceil(size));
+    }
+
+    void resize(size_type count, const_reference val = value_type{}){
+        while(size()>count)pop_back();
+        while(size()<count)push_back(val);
+    }
+
+    [[nodiscard]] allocator_type get_allocator() const {
+        return m_alloc;
     }
 
     [[nodiscard]] constexpr reference operator[](size_type index){
@@ -116,35 +261,86 @@ class vector{
         increase_capacity(std::max(size(),std::bit_ceil(size())));
     }
 
+    [[nodiscard]] constexpr iterator begin(){
+        return iterator(m_data);
+    }
+    [[nodiscard]] constexpr const_iterator cbegin() const{
+        return const_iterator(m_data);
+    }
+    [[nodiscard]] constexpr const_iterator begin() const{
+        return cbegin();
+    }
+
+    [[nodiscard]] constexpr iterator end(){
+        return iterator(m_data + size());
+    }
+    [[nodiscard]] constexpr const_iterator cend() const{
+        return const_iterator(m_data + size());
+    }
+    [[nodiscard]] constexpr const_iterator end() const{
+        return cend();
+    }
+
+    [[nodiscard]] constexpr reverse_iterator rbegin(){
+        return reverse_iterator(end());
+    }
+    [[nodiscard]] constexpr const_reverse_iterator crbegin() const{
+        return const_reverse_iterator(cend());
+    }
+    [[nodiscard]] constexpr const_reverse_iterator rbegin() const{
+        return crbegin();
+    }
+
+    [[nodiscard]] constexpr reverse_iterator rend(){
+        return reverse_iterator(begin());
+    }
+    [[nodiscard]] constexpr const_reverse_iterator crend() const{
+        return const_reverse_iterator(cbegin());
+    }
+    [[nodiscard]] constexpr const_reverse_iterator rend() const{
+        return crend();
+    }
+
+    constexpr void swap(vector& other) noexcept(noexcept(std::swap(other,*this))){
+        std::swap(other,*this);
+    }
+
     private:
 
-    [[nodiscard]] T* change_capacity(size_type size, size_type msize = 0){
-        T* newData = (T*)::operator new(size * sizeof(value_type));
+    constexpr void partition(size_type index, size_type count){
+        if(count == 0)return;
+        std::reverse(begin() + index ,end());
+        std::reverse(begin() + index , begin() + index + count);
+        std::reverse(begin() + index + count, end());
+    }
+
+    [[nodiscard]] constexpr T* change_capacity(size_type size, size_type msize = 0){
+        T* newData = m_alloc.allocate(size);
         for(int i = 0;i<msize;i++){
             if constexpr(std::is_trivially_constructible_v<value_type>){
                 std::memcpy(newData,m_data,msize*sizeof(value_type));
             }else if constexpr(std::is_nothrow_move_assignable_v<value_type>){
-                new(&newData[i]) value_type(std::move(m_data[i]));
+                std::allocator_traits<allocator_type>::construct(m_alloc,&newData[i],std::move(m_data[i]));
             }else{
-                new(&newData[i]) value_type(m_data[i]);//move or memcpy
+                std::allocator_traits<allocator_type>::construct(m_alloc,&newData[i],m_data[i]);
             }
         }
         return newData;
     }
 
-    void delete_data(size_type size){
+    constexpr void delete_data(size_type size){
         if constexpr(!std::is_trivially_destructible_v<value_type>){
             for(int i = 0;i<size;i++){
-                m_data[i].~value_type();
+                std::allocator_traits<allocator_type>::template destroy(m_alloc,&m_data[i]);
             }
         }
     }
 
-    void free_data(T* data){
-        ::operator delete[](data);
+    constexpr void free_data(T* data){
+        std::allocator_traits<allocator_type>::deallocate(m_alloc,data,capacity());
     }
 
-    void constexpr increase_capacity(size_type new_size) {
+    constexpr void increase_capacity(size_type new_size) {
         T* new_data = change_capacity(std::max<size_type>(new_size,4),size());
         m_capacity = std::max<size_type>(new_size,4);
         delete_data(size());
