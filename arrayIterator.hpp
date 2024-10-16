@@ -1,7 +1,8 @@
 #pragma once
 #include <iterator>
-template<typename T>
-struct arrayIterator{
+template <typename T>
+class arrayIterator {
+public:
     using iterator_category = std::contiguous_iterator_tag;
     friend class arrayIterator<const T>;
     using value_type = T;
@@ -11,91 +12,91 @@ struct arrayIterator{
     using const_pointer = const T*;
     using reference = T&;
     using const_reference = const T&;
-    
+
     explicit arrayIterator(pointer data) : m_data{data} {}
 
-    arrayIterator(const arrayIterator& other) : m_data(other.m_data){
-
+    arrayIterator(const arrayIterator& other) : m_data(other.m_data) {
     }
 
     constexpr operator arrayIterator<const T>() const {
         return arrayIterator<const T>(m_data);
     }
 
-    [[nodiscard]] constexpr reference operator*(){
+    [[nodiscard]] constexpr reference operator*() {
         return *m_data;
     }
-    [[nodiscard]] constexpr const_reference operator*() const{
+    [[nodiscard]] constexpr const_reference operator*() const {
         return *m_data;
     }
 
-    constexpr arrayIterator& operator++(){
+    constexpr arrayIterator& operator++() {
         ++m_data;
         return *this;
     }
 
-    constexpr arrayIterator operator++(int){
+    constexpr arrayIterator operator++(int) {
         arrayIterator tmp = *this;
         ++(*this);
         return tmp;
     }
 
-    constexpr arrayIterator& operator--(){
+    constexpr arrayIterator& operator--() {
         --m_data;
         return *this;
     }
 
-    constexpr arrayIterator operator--(int){
+    constexpr arrayIterator operator--(int) {
         arrayIterator tmp = *this;
         --(*this);
         return tmp;
     }
 
-    constexpr arrayIterator& operator+=(size_type val){
-        std::advance(m_data,val);
+    constexpr arrayIterator& operator+=(size_type val) {
+        std::advance(m_data, val);
         return *this;
     }
 
-    constexpr arrayIterator& operator-=(size_type val){
-        std::advance(m_data,-val);
+    constexpr arrayIterator& operator-=(size_type val) {
+        std::advance(m_data, -val);
         return *this;
     }
 
-    constexpr arrayIterator operator+(size_type val){
+    constexpr arrayIterator operator+(size_type val) {
         return arrayIterator(m_data + val);
     }
 
-    constexpr arrayIterator operator-(size_type val){
+    constexpr arrayIterator operator-(size_type val) {
         return arrayIterator(m_data - val);
     }
 
-    constexpr size_type operator-(arrayIterator other){
-        return m_data - other.m_data; 
+    constexpr size_type operator-(arrayIterator other) {
+        return m_data - other.m_data;
     }
 
-    [[nodiscard]] constexpr bool operator==(const arrayIterator& other) const noexcept{
+    [[nodiscard]] constexpr bool operator==(const arrayIterator& other) const noexcept {
         return m_data == other.m_data;
     }
 
-    [[nodiscard]] constexpr bool operator!=(const arrayIterator& other) const noexcept{
-        return !(*this==other);
+    [[nodiscard]] constexpr bool operator!=(const arrayIterator& other) const noexcept {
+        return !(*this == other);
     }
 
-    [[nodiscard]] constexpr bool operator<(const arrayIterator& other) const noexcept{
-        return m_data<other.m_data;
+    [[nodiscard]] constexpr bool operator<(const arrayIterator& other) const noexcept {
+        return m_data < other.m_data;
     }
 
-    [[nodiscard]] constexpr bool operator>(const arrayIterator& other) const noexcept{
-        return m_data>other.m_data;
+    [[nodiscard]] constexpr bool operator>(const arrayIterator& other) const noexcept {
+        return m_data > other.m_data;
     }
 
-    [[nodiscard]] constexpr bool operator<=(const arrayIterator& other) const noexcept{
-        return m_data<=other.m_data;
+    [[nodiscard]] constexpr bool operator<=(const arrayIterator& other) const noexcept {
+        return m_data <= other.m_data;
     }
 
-    [[nodiscard]] constexpr bool operator>=(const arrayIterator& other) const noexcept{
-        return m_data>=other.m_data;
+    [[nodiscard]] constexpr bool operator>=(const arrayIterator& other) const noexcept {
+        return m_data >= other.m_data;
     }
 
+private:
     pointer m_data;
 };
