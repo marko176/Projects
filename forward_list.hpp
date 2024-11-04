@@ -13,7 +13,7 @@ struct forward_list_node {
     using reference = T&;
     using const_reference = const T&;
     T val;
-    forward_list_node* next;
+    mutable forward_list_node* next;
 };
 
 template <typename T, class Alloc = std::allocator<T>>
@@ -389,7 +389,9 @@ public:
     void pop_front() {
         forward_list_node<T>* temp = m_root->next;
         m_root->next = temp->next;
-        std::allocator_traits<allocator_type>::destroy(m_alloc, temp);
+        if constexpr (!std::is_trivially_destructible_v<forward_list_node<value_type>>) {
+            std::allocator_traits<allocator_type>::destroy(m_alloc, temp);
+        }
         std::allocator_traits<allocator_type>::deallocate(m_alloc, temp, 1);
     }
 
@@ -456,6 +458,20 @@ public:
         swap(m_tail, other.m_tail);
     }
 
+    [[nodiscard]] constexpr bool operator==(const forward_list& other) const noexcept {
+        auto beginIt = begin();
+        auto otherBeginIt = other.begin();
+        while (beginIt != end() && otherBeginIt != other.end()) {
+            if (*beginIt++ != *otherBeginIt++)
+                return false;
+        }
+        return beginIt == end() && otherBeginIt == other.end();
+    }
+
+    [[nodiscard]] constexpr bool operator!=(const forward_list& other) const noexcept {
+        return !(*this == other);
+    }
+
 private:
     template <typename Comp>
     forward_list_node<T>* m_merge_sort(forward_list_node<T>* first, forward_list_node<T>* last, Comp compare) {
@@ -468,12 +484,11 @@ private:
             slow = slow->next;
             fast = fast->next->next;
         }
-        if (fast != last)
-            fast = fast->next;
+
         forward_list_node<T>* t = slow->next;
         slow->next = nullptr;
         forward_list_node<T>* left = m_merge_sort(first, slow, compare);
-        forward_list_node<T>* right = m_merge_sort(t, fast, compare);
+        forward_list_node<T>* right = m_merge_sort(t, last, compare);
         return m_helper_merge(left, right, compare);
     }
 

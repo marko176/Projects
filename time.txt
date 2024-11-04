@@ -1,0 +1,75 @@
+In file included from test.cpp:13:
+unordered_set_v1.hpp:186:34: warning: ‘nodiscard’ attribute applied to ‘constexpr void unordered_set_v1<T, Hash, KeyEqual, Allocator>::max_load_factor(float)’ with void return type [-Wattributes]
+  186 |     [[nodiscard]] constexpr void max_load_factor(float ml) noexcept {
+      |                                  ^~~~~~~~~~~~~~~
+test.cpp: In function ‘int main()’:
+test.cpp:120:9: warning: unused variable ‘size’ [-Wunused-variable]
+  120 |     int size = 2;
+      |         ^~~~
+test.cpp:142:10: warning: variable ‘it’ set but not used [-Wunused-but-set-variable]
+  142 |     auto it = temp.begin();
+      |          ^~
+test.cpp:143:10: warning: variable ‘it2’ set but not used [-Wunused-but-set-variable]
+  143 |     auto it2 = temp2.begin();
+      |          ^~~
+In file included from test.cpp:6:
+vector.hpp: In instantiation of ‘constexpr void vector<T, Alloc>::delete_data(size_type) [with T = std::__cxx11::basic_string<char>; Alloc = std::allocator<std::__cxx11::basic_string<char> >; size_type = long unsigned int]’:
+vector.hpp:77:9:   required from ‘vector<T, Alloc>::~vector() [with T = std::__cxx11::basic_string<char>; Alloc = std::allocator<std::__cxx11::basic_string<char> >]’
+test.cpp:208:25:   required from here
+vector.hpp:371:31: warning: comparison of integer expressions of different signedness: ‘int’ and ‘vector<std::__cxx11::basic_string<char> >::size_type’ {aka ‘long unsigned int’} [-Wsign-compare]
+  371 |             for (int i = 0; i < size; i++) {
+      |                             ~~^~~~~~
+
+Time variable                                   usr           sys          wall           GGC
+ phase setup                        :   0.00 (  0%)   0.00 (  0%)   0.01 (  0%)  1763k (  1%)
+ phase parsing                      :   1.06 ( 64%)   1.11 ( 80%)   2.16 ( 71%)   169M ( 68%)
+ phase lang. deferred               :   0.30 ( 18%)   0.16 ( 12%)   0.47 ( 15%)    40M ( 16%)
+ phase opt and generate             :   0.29 ( 17%)   0.11 (  8%)   0.40 ( 13%)    35M ( 14%)
+ phase last asm                     :   0.01 (  1%)   0.00 (  0%)   0.01 (  0%)  1224k (  0%)
+ |name lookup                       :   0.36 ( 22%)   0.13 (  9%)   0.55 ( 18%)  5807k (  2%)
+ |overload resolution               :   0.31 ( 19%)   0.22 ( 16%)   0.43 ( 14%)    31M ( 13%)
+ dump files                         :   0.03 (  2%)   0.01 (  1%)   0.04 (  1%)     0  (  0%)
+ callgraph construction             :   0.05 (  3%)   0.00 (  0%)   0.06 (  2%)  8095k (  3%)
+ callgraph optimization             :   0.02 (  1%)   0.01 (  1%)   0.01 (  0%)   663k (  0%)
+ callgraph ipa passes               :   0.04 (  2%)   0.02 (  1%)   0.06 (  2%)  3568k (  1%)
+ trivially dead code                :   0.01 (  1%)   0.00 (  0%)   0.00 (  0%)     0  (  0%)
+ df scan insns                      :   0.01 (  1%)   0.00 (  0%)   0.02 (  1%)    23k (  0%)
+ df live regs                       :   0.01 (  1%)   0.00 (  0%)   0.00 (  0%)     0  (  0%)
+ df reg dead/unused notes           :   0.01 (  1%)   0.00 (  0%)   0.00 (  0%)   226k (  0%)
+ alias analysis                     :   0.00 (  0%)   0.00 (  0%)   0.01 (  0%)    85k (  0%)
+ preprocessing                      :   0.07 (  4%)   0.28 ( 20%)   0.31 ( 10%)  6585k (  3%)
+ parser (global)                    :   0.21 ( 13%)   0.32 ( 23%)   0.53 ( 17%)    53M ( 22%)
+ parser struct body                 :   0.12 (  7%)   0.13 (  9%)   0.20 (  7%)    30M ( 12%)
+ parser enumerator list             :   0.00 (  0%)   0.01 (  1%)   0.01 (  0%)   286k (  0%)
+ parser function body               :   0.03 (  2%)   0.03 (  2%)   0.14 (  5%)  5207k (  2%)
+ parser inl. func. body             :   0.12 (  7%)   0.04 (  3%)   0.11 (  4%)  8136k (  3%)
+ parser inl. meth. body             :   0.16 ( 10%)   0.10 (  7%)   0.29 ( 10%)    20M (  8%)
+ template instantiation             :   0.57 ( 34%)   0.29 ( 21%)   0.87 ( 29%)    65M ( 27%)
+ constant expression evaluation     :   0.03 (  2%)   0.00 (  0%)   0.04 (  1%)  1117k (  0%)
+ constraint normalization           :   0.00 (  0%)   0.00 (  0%)   0.01 (  0%)   530k (  0%)
+ constraint satisfaction            :   0.02 (  1%)   0.05 (  4%)   0.04 (  1%)  2927k (  1%)
+ early inlining heuristics          :   0.00 (  0%)   0.00 (  0%)   0.01 (  0%)    31k (  0%)
+ inline parameters                  :   0.00 (  0%)   0.00 (  0%)   0.01 (  0%)   121k (  0%)
+ integration                        :   0.01 (  1%)   0.00 (  0%)   0.00 (  0%)   556k (  0%)
+ tree gimplify                      :   0.01 (  1%)   0.00 (  0%)   0.01 (  0%)  1763k (  1%)
+ tree eh                            :   0.01 (  1%)   0.00 (  0%)   0.00 (  0%)   344k (  0%)
+ tree CFG construction              :   0.00 (  0%)   0.01 (  1%)   0.00 (  0%)  1151k (  0%)
+ tree SSA rewrite                   :   0.00 (  0%)   0.00 (  0%)   0.01 (  0%)   579k (  0%)
+ tree operand scan                  :   0.00 (  0%)   0.00 (  0%)   0.02 (  1%)   931k (  0%)
+ tree switch lowering               :   0.00 (  0%)   0.00 (  0%)   0.01 (  0%)     0  (  0%)
+ dominance computation              :   0.01 (  1%)   0.00 (  0%)   0.01 (  0%)     0  (  0%)
+ out of ssa                         :   0.01 (  1%)   0.01 (  1%)   0.00 (  0%)    54k (  0%)
+ expand vars                        :   0.00 (  0%)   0.00 (  0%)   0.01 (  0%)   248k (  0%)
+ expand                             :   0.02 (  1%)   0.00 (  0%)   0.03 (  1%)  2844k (  1%)
+ post expand cleanups               :   0.00 (  0%)   0.00 (  0%)   0.01 (  0%)   474k (  0%)
+ varconst                           :   0.00 (  0%)   0.00 (  0%)   0.01 (  0%)  4312  (  0%)
+ integrated RA                      :   0.01 (  1%)   0.00 (  0%)   0.02 (  1%)    11M (  5%)
+ LRA non-specific                   :   0.01 (  1%)   0.02 (  1%)   0.01 (  0%)    85k (  0%)
+ reload                             :   0.01 (  1%)   0.00 (  0%)   0.00 (  0%)    11k (  0%)
+ thread pro- & epilogue             :   0.00 (  0%)   0.00 (  0%)   0.01 (  0%)   811k (  0%)
+ shorten branches                   :   0.01 (  1%)   0.00 (  0%)   0.01 (  0%)     0  (  0%)
+ final                              :   0.03 (  2%)   0.01 (  1%)   0.03 (  1%)  1194k (  0%)
+ symout                             :   0.05 (  3%)   0.03 (  2%)   0.09 (  3%)    16M (  7%)
+ access analysis                    :   0.00 (  0%)   0.01 (  1%)   0.00 (  0%)  1872  (  0%)
+ rest of compilation                :   0.00 (  0%)   0.02 (  1%)   0.04 (  1%)  1230k (  0%)
+ TOTAL                              :   1.66          1.38          3.05          247M

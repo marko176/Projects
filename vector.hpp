@@ -191,7 +191,7 @@ public:
         iterator tmp = first;
         while (last != end()) {
             if constexpr (std::is_trivially_copyable_v<value_type>) {
-                std::memmove(&(*first), &(*last), (end() - last) * sizeof(value_type));
+                memmove(&(*first), &(*last), (end() - last) * sizeof(value_type));
                 first += end() - last;
                 break;
             } else if constexpr (std::is_nothrow_constructible_v<value_type>) {
@@ -239,17 +239,17 @@ public:
         return m_data[index];
     }
 
-    [[nodiscard]] constexpr reference front(size_type index) {
+    [[nodiscard]] constexpr reference front() {
         return m_data[0];
     }
-    [[nodiscard]] constexpr const_reference front(size_type index) const {
+    [[nodiscard]] constexpr const_reference front() const {
         return m_data[0];
     }
 
-    [[nodiscard]] constexpr reference back(size_type index) {
+    [[nodiscard]] constexpr reference back() {
         return m_data[size() - 1];
     }
-    [[nodiscard]] constexpr const_reference back(size_type index) const {
+    [[nodiscard]] constexpr const_reference back() const {
         return m_data[size() - 1];
     }
 
@@ -333,7 +333,7 @@ public:
         auto first = begin();
         auto it = other.begin();
         auto last = end();
-        while (first != end) {
+        while (first != last) {
             if (*first++ != *it++)
                 return false;
         }
@@ -351,13 +351,16 @@ private:
 
     [[nodiscard]] constexpr T* change_capacity(size_type size, size_type msize = 0) {
         T* newData = m_alloc.allocate(size);
-        for (size_type i = 0; i < msize; i++) {
-            if constexpr (std::is_trivially_constructible_v<value_type>) {
-                std::memcpy(newData, m_data, msize * sizeof(value_type));
-            } else if constexpr (std::is_nothrow_move_assignable_v<value_type>) {
-                std::allocator_traits<allocator_type>::construct(m_alloc, &newData[i], std::move(m_data[i]));
-            } else {
-                std::allocator_traits<allocator_type>::construct(m_alloc, &newData[i], m_data[i]);
+        if constexpr (std::is_trivially_constructible_v<value_type>) {
+            memcpy(newData, m_data, msize * sizeof(value_type));
+        } else {
+            for (size_type i = 0; i < msize; i++) {
+                
+                if constexpr (std::is_nothrow_move_assignable_v<value_type>) {
+                    std::allocator_traits<allocator_type>::construct(m_alloc, &newData[i], std::move(m_data[i]));
+                } else {
+                    std::allocator_traits<allocator_type>::construct(m_alloc, &newData[i], m_data[i]);
+                }
             }
         }
         return newData;
@@ -377,8 +380,9 @@ private:
 
     constexpr void increase_capacity(size_type new_size) {
         T* new_data = change_capacity(std::max<size_type>(new_size, 4), size());
-        m_capacity = std::max<size_type>(new_size, 4);
         delete_data(size());
+        free_data(m_data);
+        m_capacity = std::max<size_type>(new_size, 4);
         m_data = new_data;
     }
 

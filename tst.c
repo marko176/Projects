@@ -1,10 +1,20 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <alloca.h>
+#include <memory.h>
+    
+int l = 2;
 int main(void) {
+    struct s{
+        int a;
+    }str = {0};
+    int arr[l];
+    printf("\033[1;31m \033[1;44m %s","hello!");
+    printf("\033[0m");
     char s1[101];
     char s2[101];
+    //[0]=2
     printf("Upisite s1 > ");
     scanf(" %[^\n]", s1);
     printf("Upisite s2 > ");
