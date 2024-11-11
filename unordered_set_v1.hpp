@@ -26,7 +26,6 @@ public:
                                                                                 : 4;
 
     unordered_set_v1() : m_list(allocator_type{}), m_vec(8, m_list.end()) {
-
     }
 
     iterator erase(iterator pos)
@@ -183,7 +182,7 @@ public:
         return Max_load_factor;
     }
 
-    [[nodiscard]] constexpr void max_load_factor(float ml) noexcept {
+    constexpr void max_load_factor(float ml) noexcept {
         Max_load_factor = ml;
     }
 
@@ -235,7 +234,7 @@ public:
 private:
     float Max_load_factor = 0.8f;
     size_type m_bucketCount;
-    allocator_type m_alloc;
+    [[no_unique_address]] allocator_type m_alloc;
     std::list<T, allocator_type> m_list;
     std::vector<typename std::list<T, allocator_type>::iterator> m_vec;
 };

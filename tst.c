@@ -3,12 +3,24 @@
 #include <stdlib.h>
 #include <alloca.h>
 #include <memory.h>
-    
+
+#define define_get_minimum(T) \
+T get_minimum_##T(T* nums, int len){ \
+    T min = nums[0]; \
+    for (int i = 1; i < len; i++) { \
+        if (nums[i] < min) { \
+            min = nums[i]; \
+        } \
+    } \
+    return min; \
+}
+
 int l = 2;
 int main(void) {
     struct s{
         int a;
     }str = {0};
+    
     int arr[l];
     printf("\033[1;31m \033[1;44m %s","hello!");
     printf("\033[0m");
@@ -34,8 +46,10 @@ int main(void) {
             l2 = s2[j] - 'a';
         if (l1 < l2) {
             printf("(%s)<(%s)\nRazlika na indeksima: (s1:%d, s2:%d)", s1, s2, i, j);
+            break;
         } else if (l1 > l2) {
             printf("(%s)>(%s)\nRazlika na indeksima: (s1:%d, s2:%d)", s1, s2, i, j);
+            break;
         }
         i++;
         j++;

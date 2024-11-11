@@ -2,4 +2,5 @@
 *.exe
 *.gch
 *.out.*
+*.pch
 test.cpp

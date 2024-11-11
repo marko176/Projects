@@ -133,7 +133,7 @@ public:
 
     template <typename... Args>
     constexpr iterator emplace(const_iterator pos, Args&&... args) {
-        size_type index = pos - begin();
+        size_type index = pos - cbegin();
         emplace_back(std::forward<Args>(args)...);
         partition(index, 1);
         return begin() + index;
@@ -144,14 +144,14 @@ public:
     }
 
     constexpr iterator insert(const_iterator pos, value_type&& val) {
-        size_type index = pos - begin();
+        size_type index = pos - cbegin();
         push_back(std::move(val));
         partition(index, 1);
         return begin() + index;
     }
 
     constexpr iterator insert(const_iterator pos, size_type count, const_reference val) {
-        size_type index = pos - begin();
+        size_type index = pos - cbegin();
         for (size_type i = 0; i < count; ++i)
             push_back(val);
         partition(index, count);
@@ -160,7 +160,7 @@ public:
 
     template <typename It>
     constexpr iterator insert(const_iterator pos, It first, It last) {
-        size_type index = pos - begin();
+        size_type index = pos - cbegin();
         size_type count = 0;
         while (first != last) {
             push_back(*first++);
@@ -171,7 +171,7 @@ public:
     }
 
     constexpr iterator insert(const_iterator pos, std::initializer_list<T> list) {
-        size_type index = pos - begin();
+        size_type index = pos - cbegin();
         size_type count = 0;
         for (const_reference n : list) {
             push_back(n);
